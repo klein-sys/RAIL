@@ -195,7 +195,7 @@ dialog::backdrop { background: #030811c7; backdrop-filter: blur(4px); }
   .rail > .control-body > :not(.slider-row) { grid-column: 1 / -1; }
   .scope canvas { max-height: 98px; }
 }
-@media (max-width: 1023px) {
+@media not all and (min-width: 1024px) {
   :root { scroll-padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
   .shell:has(.touch-combat:not([hidden])) { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
   .touch-combat {
