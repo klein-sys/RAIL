@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#070b14">
+    <meta name="description" content="A differential calculus arcade game. Repair a mag-lev railway and time plasma shots across five contested sectors.">
+    <title>Cyber-Rail Defender · Calculus Protocol</title>
+    <link rel="stylesheet" href="./src/styles.css">
+  </head>
+  <body>
+    <a class="skip" href="#controls">Skip to controls</a>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="./" aria-label="Cyber-Rail Defender home">
+          <svg class="brand-mark" viewBox="0 0 42 42" fill="none" aria-hidden="true"><path d="M21 2 38 11.5V30.5L21 40 4 30.5v-19z"/><path d="m23 10-9 13h7l-2 9 9-13h-7z"/></svg>
+          <span><strong>CYBER-RAIL <em>DEFENDER</em></strong><small>CALCULUS PROTOCOL <b> / </b> MATH 101</small></span>
+        </a>
+        <button class="inspector-button" id="open-inspector" type="button">📊 Math &amp; Rubric Inspector <span>(Presentation Mode)</span></button>
+      </div>
+    </header>
+    <main class="shell">
+      <header class="mission-header">
+        <div>
+          <p class="eyebrow"><span class="signal-dot"></span> OPERATIONS DECK</p>
+          <h1>Railway defense command</h1>
+        </div>
+        <div class="sector-indicator">
+          <span id="sector-counter">SECTOR 01 / 05</span>
+          <div class="sector-pips" id="sector-pips" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+      </header>
+      <div class="cockpit">
+        <section class="viewport panel" aria-labelledby="viewport-title">
+          <header class="viewport-header">
+            <h2 id="viewport-title"><span class="target-icon" aria-hidden="true">⌖</span> Tactical viewport</h2>
+            <span class="system-tag" id="viewport-state">STANDBY</span>
+          </header>
+          <div class="telemetry">
+            <div><span class="metric-label">HULL INTEGRITY</span><div class="hull-row"><meter id="hull" min="0" max="100" value="100" aria-label="Hull integrity"></meter><strong id="hull-value">100%</strong></div></div>
+            <div><span class="metric-label">TRAIN POSITION</span><strong id="train-position">x = 0.00</strong></div>
+            <div><span class="metric-label">BOUNDARY <b id="boundary-coord">c = 3</b></span><strong id="boundary-time">20.0 s</strong></div>
+            <div><span class="metric-label">DRONES DOWN</span><strong id="drone-count">00 <span>/ 03</span></strong></div>
+          </div>
+          <div class="scene" id="scene" tabindex="-1" aria-label="Tactical viewport. Use W and S for shift, A and D for node, Enter to weld, and Space to fire.">
+            <canvas id="world" width="960" height="630" role="img" aria-label="Tactical map showing the train, piecewise rails, bridge joint, and Harvester drone. Live values are available in the control panels."></canvas>
+            <div class="enemy-strip" id="enemy-strip">
+              <span class="enemy-icon" aria-hidden="true">◇</span>
+              <div><strong id="enemy-name">ARMORED HARVESTER</strong><span id="enemy-window">PIERCE AT |θ′| ≥ 3.5</span></div>
+              <meter id="enemy-health" min="0" max="100" value="100" aria-label="Drone shield integrity"></meter>
+            </div>
+            <div class="scene-cover" id="scene-cover">
+              <div class="launch-card">
+                <p class="eyebrow"><span class="signal-dot"></span> TRANSMISSION / 001</p>
+                <h2 id="cover-title">Hold the line.</h2>
+                <p id="cover-body">Weld the rail joints before the train reaches them. Time plasma shots to break Harvester shields.</p>
+                <div class="launch-actions">
+                  <button class="button primary" id="launch" type="button">Launch mission <span aria-hidden="true">→</span></button>
+                  <button class="button secondary" id="endless" type="button" hidden>Procedural patrol</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="route-info">
+            <div><span class="metric-label">ACTIVE SECTOR</span><strong id="sector-name">The Lower Foundry</strong></div>
+            <div class="legend"><span><i class="legend-dot green"></i>Left rail</span><span><i class="legend-dot blue"></i>Right rail</span><span><i class="legend-dot pink"></i>Joint fault</span></div>
+          </div>
+          <p class="feed" id="feed" data-tone="info" role="status" aria-live="polite">Awaiting launch authorization.</p>
+        </section>
+        <aside class="controls" id="controls" aria-label="Calculus control deck">
+          <section class="panel control rail" aria-labelledby="rail-title">
+            <header class="control-header">
+              <span class="system-icon" aria-hidden="true">⛓</span>
+              <div><p class="eyebrow">SYSTEM A / SURVIVAL</p><h2 id="rail-title">Mag-lev rail</h2></div>
+            </header>
+            <div class="control-body">
+              <div class="equation" id="piecewise"></div>
+              <ol class="conditions" aria-label="Continuity conditions">
+                <li><div><strong>Node is defined</strong><span id="condition-node"></span></div><span class="badge" id="badge-node"></span></li>
+                <li><div><strong>Side limits match</strong><span id="condition-limits"></span></div><span class="badge" id="badge-limits"></span></li>
+                <li><div><strong>Limit equals node</strong><span id="condition-value"></span></div><span class="badge" id="badge-value"></span></li>
+              </ol>
+              <div class="slider-row">
+                <div class="slider-label"><label for="shift">Right-hand shift <b>k</b></label><output for="shift" id="shift-value">0</output></div>
+                <div class="steppers">
+                  <button id="shift-down" type="button" aria-label="Decrease right-hand shift">−</button>
+                  <input id="shift" type="range" min="-12" max="12" step="0.5" value="0">
+                  <button id="shift-up" type="button" aria-label="Increase right-hand shift">+</button>
+                </div>
+              </div>
+              <div class="slider-row">
+                <div class="slider-label"><label for="node">Bridge node <b id="node-symbol">f(3)</b></label><output for="node" id="node-value">4</output></div>
+                <div class="steppers">
+                  <button id="node-down" type="button" aria-label="Decrease bridge node value">−</button>
+                  <input id="node" type="range" min="-6" max="22" step="0.5" value="4">
+                  <button id="node-up" type="button" aria-label="Increase bridge node value">+</button>
+                </div>
+              </div>
+              <button class="button system-action" id="weld" type="button"><span id="weld-label">Engage track weld</span><kbd>Enter</kbd></button>
+            </div>
+          </section>
+          <section class="panel control combat" aria-labelledby="combat-title">
+            <header class="control-header">
+              <span class="system-icon" aria-hidden="true">ϟ</span>
+              <div><p class="eyebrow">SYSTEM B / OFFENSE</p><h2 id="combat-title">Plasma turret</h2></div>
+            </header>
+            <div class="control-body">
+              <div class="equation wave-equation"><div><span>θ(t)</span> = <strong id="position-formula"></strong></div><div><span>θ′(t)</span> = <strong id="derivative-formula"></strong></div></div>
+              <div class="scope">
+                <canvas id="scope" width="480" height="132" role="img" aria-label="Oscilloscope with position in white, derivative in cyan, and a vertical cursor showing the current phase."></canvas>
+                <div class="scope-legend"><span>● θ position</span><span>● θ′ derivative</span></div>
+              </div>
+              <dl class="wave-readings">
+                <div><dt>PHASE t</dt><dd id="phase-value"></dd></div>
+                <div><dt>RATE θ′</dt><dd id="rate-value"></dd></div>
+                <div><dt>OUTPUT</dt><dd id="power-value"></dd></div>
+              </dl>
+              <div class="ammo" role="group" aria-label="Ammo mode">
+                <button id="kinetic" type="button" aria-pressed="true"><span>Kinetic</span><small>Piercer</small></button>
+                <button id="stasis" type="button" aria-pressed="false"><span>Stasis</span><small>Sniper</small></button>
+              </div>
+              <p class="fire-window" id="fire-window"></p>
+              <button class="button system-action" id="fire" type="button"><span id="fire-label">Fire plasma pulse</span><kbd>Space</kbd></button>
+            </div>
+          </section>
+        </aside>
+      </div>
+      <section class="touch-combat combat" id="touch-combat" aria-label="Quick combat controls" hidden>
+        <div class="touch-readout">
+          <strong id="touch-window">WAIT</strong>
+          <span id="touch-rate">|θ′| = 0 rad/s</span>
+        </div>
+        <button class="button secondary" id="touch-ammo" type="button" aria-label="Switch ammo mode">Kinetic</button>
+        <button class="button system-action" id="touch-fire" type="button">Fire</button>
+      </section>
+      <footer class="footer">
+        <span><kbd>W</kbd> <kbd>S</kbd> Shift <b>·</b> <kbd>A</kbd> <kbd>D</kbd> Node <b>·</b> <kbd>Enter</kbd> Weld <b>·</b> <kbd>Space</kbd> Fire</span>
+        <span>MATH 101 / DIFFERENTIAL CALCULUS</span>
+      </footer>
+    </main>
+    <dialog id="inspector" aria-labelledby="inspector-title">
+      <div class="dialog-shell">
+        <header class="dialog-header">
+          <div><p class="eyebrow"><span class="signal-dot"></span> PRESENTATION MODE</p><h2 id="inspector-title">Math &amp; Rubric Inspector</h2></div>
+          <form method="dialog"><button class="close-dialog" aria-label="Close inspector" autofocus>×</button></form>
+        </header>
+        <div class="dialog-body">
+          <section aria-labelledby="clock-title">
+            <h3 id="clock-title">Simulation speed</h3>
+            <div class="speed-controls" role="group" aria-label="Simulation speed">
+              <button type="button" id="speed-normal" aria-pressed="true">1×</button>
+              <button type="button" id="speed-slow" aria-pressed="false">0.25× Presentation</button>
+              <button type="button" id="speed-pause" aria-pressed="false">Pause</button>
+              <button type="button" id="freeze-phase">Freeze at t = π/2</button>
+            </div>
+            <p id="presentation-status">The chosen speed stays active when the inspector closes.</p>
+          </section>
+          <section class="example rail" aria-labelledby="example-rail-title">
+            <h3 id="example-rail-title">01 / Limits &amp; continuity</h3>
+            <ol id="rail-example"></ol>
+            <p>Weld the joint after both side limits and the node agree. An unsealed crossing costs 36 hull.</p>
+          </section>
+          <section class="example combat" aria-labelledby="example-wave-title">
+            <h3 id="example-wave-title">02 / Basic trigonometric derivatives</h3>
+            <ol id="wave-example"></ol>
+          </section>
+          <section aria-labelledby="rules-title">
+            <h3 id="rules-title">How to play</h3>
+            <ul class="rules">
+              <li><strong>Objective.</strong> Reach the end of five sectors with hull remaining and at least three Harvesters destroyed. Hull at zero or fewer than three kills at the terminus ends the campaign.</li>
+              <li><strong>Movement.</strong> Match the side limits with the shift, then set the node to their common value. Press Enter to weld before the train reaches the boundary.</li>
+              <li><strong>Combat.</strong> Use Kinetic Piercer against armor and fire when the rate meets the shield’s threshold. Use Stasis Sniper against phase shields and fire at |θ′| &lt; 0.25 rad/s. The pulse uses the rate at launch and deals damage on impact. Each surviving Harvester costs 24 hull at the exit.</li>
+              <li><strong>Touch.</strong> Use the sliders or +/− buttons to adjust the rail, then tap Engage track weld. Switch ammo or fire from the bar at the bottom of the screen.</li>
+              <li><strong>Keys.</strong> W/S or ↑/↓ change k. A/D or ←/→ change the node. Enter welds and Space fires. Tab moves through the controls.</li>
+            </ul>
+          </section>
+        </div>
+      </div>
+    </dialog>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
